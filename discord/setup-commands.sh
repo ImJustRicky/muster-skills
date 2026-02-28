@@ -43,36 +43,45 @@ ENDPOINT="https://discord.com/api/v10/applications/${MUSTER_DISCORD_APP_ID}/guil
 
 echo "Registering slash commands for guild ${MUSTER_DISCORD_GUILD_ID}..."
 
-# Bulk overwrite — idempotent, replaces all guild commands with this set
+# Bulk overwrite — idempotent, replaces all guild commands with this set.
+# Uses a single /muster parent with subcommands (option type 1) so commands
+# appear as /muster deploy, /muster status, /muster rollback in Discord's UI.
 COMMANDS='[
   {
-    "name": "deploy",
+    "name": "muster",
     "type": 1,
-    "description": "Trigger a deployment",
+    "description": "Muster deploy framework commands",
     "options": [
       {
-        "name": "service",
-        "description": "The service to deploy",
-        "type": 3,
-        "required": true
-      }
-    ]
-  },
-  {
-    "name": "status",
-    "type": 1,
-    "description": "Check deployment status"
-  },
-  {
-    "name": "rollback",
-    "type": 1,
-    "description": "Rollback a service",
-    "options": [
+        "name": "deploy",
+        "description": "Trigger a deployment",
+        "type": 1,
+        "options": [
+          {
+            "name": "service",
+            "description": "The service to deploy",
+            "type": 3,
+            "required": true
+          }
+        ]
+      },
       {
-        "name": "service",
-        "description": "The service to rollback",
-        "type": 3,
-        "required": true
+        "name": "status",
+        "description": "Check deployment status",
+        "type": 1
+      },
+      {
+        "name": "rollback",
+        "description": "Rollback a service",
+        "type": 1,
+        "options": [
+          {
+            "name": "service",
+            "description": "The service to rollback",
+            "type": 3,
+            "required": true
+          }
+        ]
       }
     ]
   }
@@ -89,9 +98,9 @@ BODY=$(echo "$RESPONSE" | sed '$d')
 
 if [[ "$HTTP_CODE" == "200" ]]; then
   echo "OK — Slash commands registered:"
-  echo "  /deploy <service>  — Trigger a deployment"
-  echo "  /status            — Check deployment status"
-  echo "  /rollback <service> — Rollback a service"
+  echo "  /muster deploy <service>  — Trigger a deployment"
+  echo "  /muster status            — Check deployment status"
+  echo "  /muster rollback <service> — Rollback a service"
   echo ""
   echo "Commands are available in your Discord server now."
   echo ""
