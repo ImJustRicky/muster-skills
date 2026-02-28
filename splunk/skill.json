@@ -1,6 +1,6 @@
 {
   "name": "splunk",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Ship deploy events to Splunk via HEC",
   "author": "ImJustRicky",
   "hooks": ["post-deploy", "post-rollback"],
