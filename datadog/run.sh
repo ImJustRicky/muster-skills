@@ -4,46 +4,63 @@ set -eo pipefail
 # Datadog event skill for muster
 # Sends deploy events to the Datadog Events API.
 
-if [[ -z "$MUSTER_DATADOG_API_KEY" ]]; then
+if [[ -z "${MUSTER_DATADOG_API_KEY:-}" ]]; then
   echo "[datadog-skill] WARNING: MUSTER_DATADOG_API_KEY is not set, skipping notification."
   exit 0
 fi
 
 SERVICE="${MUSTER_SERVICE:-unknown}"
+SERVICE_NAME="${MUSTER_SERVICE_NAME:-$SERVICE}"
 HOOK="${MUSTER_HOOK:-unknown}"
+STATUS="${MUSTER_DEPLOY_STATUS:-unknown}"
 TIMESTAMP=$(date +%s)
 
-case "$HOOK" in
-  post-deploy)
-    TITLE="Deployed ${SERVICE}"
-    TEXT="Service ${SERVICE} was successfully deployed."
+case "${HOOK}:${STATUS}" in
+  post-deploy:success)
+    TITLE="Deployed ${SERVICE_NAME}"
+    TEXT="Service ${SERVICE_NAME} was successfully deployed."
     ALERT_TYPE="success"
     ;;
-  post-rollback)
-    TITLE="Rolled back ${SERVICE}"
-    TEXT="Service ${SERVICE} was rolled back."
+  post-deploy:failed)
+    TITLE="Deploy failed: ${SERVICE_NAME}"
+    TEXT="Service ${SERVICE_NAME} deploy failed."
+    ALERT_TYPE="error"
+    ;;
+  post-deploy:skipped)
+    TITLE="Deploy skipped: ${SERVICE_NAME}"
+    TEXT="Service ${SERVICE_NAME} deploy was skipped."
     ALERT_TYPE="warning"
     ;;
+  post-rollback:success)
+    TITLE="Rolled back ${SERVICE_NAME}"
+    TEXT="Service ${SERVICE_NAME} was rolled back."
+    ALERT_TYPE="warning"
+    ;;
+  post-rollback:failed)
+    TITLE="Rollback failed: ${SERVICE_NAME}"
+    TEXT="Service ${SERVICE_NAME} rollback failed."
+    ALERT_TYPE="error"
+    ;;
   *)
-    TITLE="Muster hook ${HOOK} for ${SERVICE}"
-    TEXT="Hook ${HOOK} fired for service ${SERVICE}."
+    TITLE="Muster: ${HOOK} ${SERVICE_NAME}"
+    TEXT="Hook ${HOOK} fired for service ${SERVICE_NAME} (status: ${STATUS})."
     ALERT_TYPE="info"
     ;;
 esac
+
+DD_SITE="${MUSTER_DATADOG_SITE:-datadoghq.com}"
 
 PAYLOAD=$(cat <<EOF
 {
   "title": "${TITLE}",
   "text": "${TEXT}",
   "date_happened": ${TIMESTAMP},
-  "tags": ["service:${SERVICE}", "hook:${HOOK}"],
+  "tags": ["service:${SERVICE}", "hook:${HOOK}", "status:${STATUS}"],
   "alert_type": "${ALERT_TYPE}",
   "source_type_name": "muster"
 }
 EOF
 )
-
-DD_SITE="${MUSTER_DATADOG_SITE:-datadoghq.com}"
 
 if ! curl -sf -X POST \
   -H "DD-API-KEY: ${MUSTER_DATADOG_API_KEY}" \

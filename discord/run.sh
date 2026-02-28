@@ -15,27 +15,41 @@ if [[ -z "${MUSTER_DISCORD_CHANNEL_ID:-}" ]]; then
 fi
 
 SERVICE="${MUSTER_SERVICE:-unknown}"
+SERVICE_NAME="${MUSTER_SERVICE_NAME:-$SERVICE}"
 HOOK="${MUSTER_HOOK:-unknown}"
+STATUS="${MUSTER_DEPLOY_STATUS:-unknown}"
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%S.000Z" 2>/dev/null || date +"%Y-%m-%dT%H:%M:%SZ")
 
-case "$HOOK" in
-  post-deploy)
-    TITLE="Deployed ${SERVICE}"
-    DESC="Service **${SERVICE}** was successfully deployed."
-    # Green
-    COLOR=3066993
+case "${HOOK}:${STATUS}" in
+  post-deploy:success)
+    TITLE="Deployed ${SERVICE_NAME}"
+    DESC="Service **${SERVICE_NAME}** was successfully deployed."
+    COLOR=3066993  # green
     ;;
-  post-rollback)
-    TITLE="Rolled back ${SERVICE}"
-    DESC="Service **${SERVICE}** was rolled back."
-    # Orange
-    COLOR=15105570
+  post-deploy:failed)
+    TITLE="Deploy FAILED: ${SERVICE_NAME}"
+    DESC="Service **${SERVICE_NAME}** deploy failed."
+    COLOR=15158332  # red
+    ;;
+  post-deploy:skipped)
+    TITLE="Deploy skipped: ${SERVICE_NAME}"
+    DESC="Service **${SERVICE_NAME}** was skipped."
+    COLOR=15105570  # orange
+    ;;
+  post-rollback:success)
+    TITLE="Rolled back ${SERVICE_NAME}"
+    DESC="Service **${SERVICE_NAME}** was rolled back."
+    COLOR=15105570  # orange
+    ;;
+  post-rollback:failed)
+    TITLE="Rollback FAILED: ${SERVICE_NAME}"
+    DESC="Service **${SERVICE_NAME}** rollback failed."
+    COLOR=15158332  # red
     ;;
   *)
     TITLE="Muster: ${HOOK}"
-    DESC="Hook \`${HOOK}\` fired for **${SERVICE}**."
-    # Gray
-    COLOR=9807270
+    DESC="Hook \`${HOOK}\` fired for **${SERVICE_NAME}** (status: ${STATUS})."
+    COLOR=9807270  # gray
     ;;
 esac
 
@@ -47,7 +61,8 @@ PAYLOAD=$(cat <<EOF
       "description": "${DESC}",
       "color": ${COLOR},
       "fields": [
-        {"name": "Service", "value": "${SERVICE}", "inline": true},
+        {"name": "Service", "value": "${SERVICE_NAME}", "inline": true},
+        {"name": "Status", "value": "${STATUS}", "inline": true},
         {"name": "Hook", "value": "${HOOK}", "inline": true}
       ],
       "footer": {"text": "muster deploy bot"},

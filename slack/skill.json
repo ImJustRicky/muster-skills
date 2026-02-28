@@ -1,6 +1,6 @@
 {
   "name": "slack",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Send deploy notifications to Slack via webhook",
   "author": "ImJustRicky",
   "hooks": ["post-deploy", "post-rollback"],

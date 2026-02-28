@@ -4,18 +4,20 @@ set -eo pipefail
 # Splunk HEC notification skill for muster
 # Ships structured deploy events to Splunk HTTP Event Collector.
 
-if [[ -z "$MUSTER_SPLUNK_HEC_URL" ]]; then
+if [[ -z "${MUSTER_SPLUNK_HEC_URL:-}" ]]; then
   echo "[splunk-skill] WARNING: MUSTER_SPLUNK_HEC_URL is not set, skipping notification."
   exit 0
 fi
 
-if [[ -z "$MUSTER_SPLUNK_HEC_TOKEN" ]]; then
+if [[ -z "${MUSTER_SPLUNK_HEC_TOKEN:-}" ]]; then
   echo "[splunk-skill] WARNING: MUSTER_SPLUNK_HEC_TOKEN is not set, skipping notification."
   exit 0
 fi
 
 SERVICE="${MUSTER_SERVICE:-unknown}"
+SERVICE_NAME="${MUSTER_SERVICE_NAME:-$SERVICE}"
 HOOK="${MUSTER_HOOK:-unknown}"
+STATUS="${MUSTER_DEPLOY_STATUS:-unknown}"
 TIMESTAMP=$(date +%s)
 HOSTNAME=$(hostname)
 
@@ -23,7 +25,9 @@ PAYLOAD=$(cat <<EOF
 {
   "event": {
     "service": "${SERVICE}",
+    "service_name": "${SERVICE_NAME}",
     "hook": "${HOOK}",
+    "status": "${STATUS}",
     "timestamp": ${TIMESTAMP},
     "hostname": "${HOSTNAME}"
   },
