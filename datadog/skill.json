@@ -1,0 +1,8 @@
+{
+  "name": "datadog",
+  "version": "1.0.0",
+  "description": "Send deploy events to Datadog",
+  "author": "Ricky Eipper",
+  "hooks": ["post-deploy", "post-rollback"],
+  "requires": ["curl"]
+}
