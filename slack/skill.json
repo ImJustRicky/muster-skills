@@ -2,7 +2,7 @@
   "name": "slack",
   "version": "1.0.0",
   "description": "Send deploy notifications to Slack via webhook",
-  "author": "Ricky Eipper",
+  "author": "ImJustRicky",
   "hooks": ["post-deploy", "post-rollback"],
   "requires": ["curl"]
 }

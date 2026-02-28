@@ -2,7 +2,7 @@
   "name": "splunk",
   "version": "1.0.0",
   "description": "Ship deploy events to Splunk via HEC",
-  "author": "Ricky Eipper",
+  "author": "ImJustRicky",
   "hooks": ["post-deploy", "post-rollback"],
   "requires": ["curl"]
 }

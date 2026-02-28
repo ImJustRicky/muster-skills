@@ -4,7 +4,7 @@
       "name": "slack",
       "description": "Send deploy notifications to Slack via webhook",
       "version": "1.0.0",
-      "author": "Ricky Eipper",
+      "author": "ImJustRicky",
       "hooks": ["post-deploy", "post-rollback"],
       "requires": ["curl"]
     },
@@ -12,7 +12,7 @@
       "name": "splunk",
       "description": "Ship deploy events to Splunk via HEC",
       "version": "1.0.0",
-      "author": "Ricky Eipper",
+      "author": "ImJustRicky",
       "hooks": ["post-deploy", "post-rollback"],
       "requires": ["curl"]
     },
@@ -20,7 +20,7 @@
       "name": "datadog",
       "description": "Send deploy events to Datadog",
       "version": "1.0.0",
-      "author": "Ricky Eipper",
+      "author": "ImJustRicky",
       "hooks": ["post-deploy", "post-rollback"],
       "requires": ["curl"]
     }

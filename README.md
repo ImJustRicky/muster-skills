@@ -30,4 +30,4 @@ See the [skill authoring guide](https://github.com/ImJustRicky/muster/blob/main/
 
 ---
 
-Apache 2.0 · Built by Ricky Eipper
+Apache 2.0 · Built by ImJustRicky
