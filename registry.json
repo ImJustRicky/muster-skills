@@ -23,6 +23,14 @@
       "author": "ImJustRicky",
       "hooks": ["post-deploy", "post-rollback"],
       "requires": ["curl"]
+    },
+    {
+      "name": "discord",
+      "description": "Send deploy notifications to Discord and register slash commands",
+      "version": "1.0.0",
+      "author": "ImJustRicky",
+      "hooks": ["post-deploy", "post-rollback"],
+      "requires": ["curl"]
     }
   ]
 }

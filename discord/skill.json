@@ -1,0 +1,31 @@
+{
+  "name": "discord",
+  "version": "1.0.0",
+  "description": "Send deploy notifications to Discord and register slash commands",
+  "author": "ImJustRicky",
+  "hooks": ["post-deploy", "post-rollback"],
+  "requires": ["curl"],
+  "config": [
+    {
+      "key": "MUSTER_DISCORD_BOT_TOKEN",
+      "label": "Discord Bot Token",
+      "hint": "discord.com/developers/applications > Your App > Bot > Token",
+      "secret": true
+    },
+    {
+      "key": "MUSTER_DISCORD_CHANNEL_ID",
+      "label": "Discord Channel ID",
+      "hint": "Enable Developer Mode, right-click channel > Copy Channel ID"
+    },
+    {
+      "key": "MUSTER_DISCORD_APP_ID",
+      "label": "Discord Application ID",
+      "hint": "discord.com/developers/applications > Your App > General > Application ID (for slash commands)"
+    },
+    {
+      "key": "MUSTER_DISCORD_GUILD_ID",
+      "label": "Discord Server (Guild) ID",
+      "hint": "Right-click server name > Copy Server ID (for slash commands)"
+    }
+  ]
+}

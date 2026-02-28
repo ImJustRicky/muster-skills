@@ -9,6 +9,7 @@ Community and first-party skill addons for the [muster](https://github.com/ImJus
 | **slack** | Send deploy notifications to Slack via webhook | `muster skill add slack` |
 | **splunk** | Ship deploy events to Splunk via HEC | `muster skill add splunk` |
 | **datadog** | Send deploy events to Datadog | `muster skill add datadog` |
+| **discord** | Send deploy notifications to Discord + slash commands | `muster skill add discord` |
 
 ## Installation
 
