@@ -1,8 +1,21 @@
 {
   "name": "splunk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Ship deploy events to Splunk via HEC",
   "author": "ImJustRicky",
   "hooks": ["post-deploy", "post-rollback"],
-  "requires": ["curl"]
+  "requires": ["curl"],
+  "config": [
+    {
+      "key": "MUSTER_SPLUNK_HEC_URL",
+      "label": "Splunk HEC URL",
+      "hint": "e.g. https://your-splunk:8088/services/collector/event"
+    },
+    {
+      "key": "MUSTER_SPLUNK_HEC_TOKEN",
+      "label": "Splunk HEC Token",
+      "hint": "Settings > Data Inputs > HTTP Event Collector > New Token",
+      "secret": true
+    }
+  ]
 }
