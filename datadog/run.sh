@@ -43,11 +43,13 @@ PAYLOAD=$(cat <<EOF
 EOF
 )
 
+DD_SITE="${MUSTER_DATADOG_SITE:-datadoghq.com}"
+
 if ! curl -sf -X POST \
   -H "DD-API-KEY: ${MUSTER_DATADOG_API_KEY}" \
   -H "Content-Type: application/json" \
   -d "$PAYLOAD" \
-  "https://api.datadoghq.com/api/v1/events" > /dev/null 2>&1; then
+  "https://api.${DD_SITE}/api/v1/events" > /dev/null 2>&1; then
   echo "[datadog-skill] WARNING: Failed to send Datadog event (curl error). Continuing."
 fi
 

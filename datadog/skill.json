@@ -1,8 +1,21 @@
 {
   "name": "datadog",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Send deploy events to Datadog",
   "author": "ImJustRicky",
   "hooks": ["post-deploy", "post-rollback"],
-  "requires": ["curl"]
+  "requires": ["curl"],
+  "config": [
+    {
+      "key": "MUSTER_DATADOG_API_KEY",
+      "label": "Datadog API Key",
+      "hint": "Organization Settings > API Keys",
+      "secret": true
+    },
+    {
+      "key": "MUSTER_DATADOG_SITE",
+      "label": "Datadog Site",
+      "hint": "e.g. datadoghq.com (US1), us3.datadoghq.com, datadoghq.eu, etc. Default: datadoghq.com"
+    }
+  ]
 }
