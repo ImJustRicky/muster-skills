@@ -1,9 +1,18 @@
 {
   "name": "discord",
-  "version": "1.0.2",
-  "description": "Send deploy notifications to Discord and register slash commands",
-  "author": "ImJustRicky",
-  "hooks": ["post-deploy", "post-rollback"],
+  "version": "2.0.0",
+  "description": "Send deploy and fleet notifications to Discord",
+  "author": "muster",
+  "hooks": [
+    "post-deploy",
+    "post-rollback",
+    "fleet-deploy-start",
+    "fleet-deploy-end",
+    "fleet-machine-deploy-start",
+    "fleet-machine-deploy-end",
+    "fleet-rollback-start",
+    "fleet-rollback-end"
+  ],
   "requires": ["curl"],
   "config": [
     {
@@ -19,13 +28,13 @@
     },
     {
       "key": "MUSTER_DISCORD_APP_ID",
-      "label": "Discord Application ID",
-      "hint": "discord.com/developers/applications > Your App > General > Application ID (for slash commands)"
+      "label": "Discord Application ID (optional)",
+      "hint": "For slash commands — discord.com/developers/applications > Your App > General > Application ID"
     },
     {
       "key": "MUSTER_DISCORD_GUILD_ID",
-      "label": "Discord Server (Guild) ID",
-      "hint": "Right-click server name > Copy Server ID (for slash commands)"
+      "label": "Discord Server ID (optional)",
+      "hint": "For slash commands — right-click server name > Copy Server ID"
     }
   ]
 }

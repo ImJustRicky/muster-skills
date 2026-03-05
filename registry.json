@@ -1,35 +1,66 @@
 {
   "skills": [
     {
-      "name": "slack",
-      "description": "Send deploy notifications to Slack via webhook",
-      "version": "1.0.3",
-      "author": "ImJustRicky",
-      "hooks": ["post-deploy", "post-rollback"],
+      "name": "discord",
+      "description": "Send deploy and fleet notifications to Discord",
+      "version": "2.0.0",
+      "author": "muster",
+      "hooks": [
+        "post-deploy", "post-rollback",
+        "fleet-deploy-start", "fleet-deploy-end",
+        "fleet-machine-deploy-start", "fleet-machine-deploy-end",
+        "fleet-rollback-start", "fleet-rollback-end"
+      ],
       "requires": ["curl"]
     },
     {
-      "name": "splunk",
-      "description": "Ship deploy events to Splunk via HEC",
-      "version": "1.0.3",
-      "author": "ImJustRicky",
-      "hooks": ["post-deploy", "post-rollback"],
+      "name": "slack",
+      "description": "Send deploy and fleet notifications to Slack",
+      "version": "2.0.0",
+      "author": "muster",
+      "hooks": [
+        "post-deploy", "post-rollback",
+        "fleet-deploy-start", "fleet-deploy-end",
+        "fleet-machine-deploy-start", "fleet-machine-deploy-end",
+        "fleet-rollback-start", "fleet-rollback-end"
+      ],
+      "requires": ["curl"]
+    },
+    {
+      "name": "webhook",
+      "description": "Send deploy and fleet events to any webhook endpoint",
+      "version": "1.0.0",
+      "author": "muster",
+      "hooks": [
+        "post-deploy", "post-rollback",
+        "fleet-deploy-start", "fleet-deploy-end",
+        "fleet-machine-deploy-start", "fleet-machine-deploy-end",
+        "fleet-rollback-start", "fleet-rollback-end"
+      ],
       "requires": ["curl"]
     },
     {
       "name": "datadog",
-      "description": "Send deploy events to Datadog",
-      "version": "1.0.3",
-      "author": "ImJustRicky",
-      "hooks": ["post-deploy", "post-rollback"],
+      "description": "Send deploy and fleet events to Datadog",
+      "version": "2.0.0",
+      "author": "muster",
+      "hooks": [
+        "post-deploy", "post-rollback",
+        "fleet-deploy-end", "fleet-machine-deploy-end",
+        "fleet-rollback-end"
+      ],
       "requires": ["curl"]
     },
     {
-      "name": "discord",
-      "description": "Send deploy notifications to Discord and register slash commands",
-      "version": "1.0.2",
-      "author": "ImJustRicky",
-      "hooks": ["post-deploy", "post-rollback"],
+      "name": "splunk",
+      "description": "Ship deploy and fleet events to Splunk via HEC",
+      "version": "2.0.0",
+      "author": "muster",
+      "hooks": [
+        "post-deploy", "post-rollback",
+        "fleet-deploy-end", "fleet-machine-deploy-end",
+        "fleet-rollback-end"
+      ],
       "requires": ["curl"]
     }
   ]

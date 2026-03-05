@@ -2,61 +2,130 @@
 set -eo pipefail
 
 # Slack notification skill for muster
-# Sends deploy/rollback notifications to a Slack incoming webhook.
+# Sends deploy, rollback, and fleet notifications via Slack Incoming Webhook.
+# Uses Block Kit (modern) — https://docs.slack.dev/block-kit
+#
+# Required config:
+#   MUSTER_SLACK_WEBHOOK — Slack incoming webhook URL
+#
+# Supports all deploy hooks and fleet hooks.
+# Per-fleet config lets you send to different Slack channels per fleet.
 
 if [[ -z "${MUSTER_SLACK_WEBHOOK:-}" ]]; then
-  echo "[slack-skill] WARNING: MUSTER_SLACK_WEBHOOK is not set, skipping notification."
+  echo "[slack] No webhook URL configured, skipping."
   exit 0
 fi
 
-SERVICE="${MUSTER_SERVICE:-unknown}"
-SERVICE_NAME="${MUSTER_SERVICE_NAME:-$SERVICE}"
+# --- Context ---
+
 HOOK="${MUSTER_HOOK:-unknown}"
 STATUS="${MUSTER_DEPLOY_STATUS:-unknown}"
+SERVICE="${MUSTER_SERVICE_NAME:-${MUSTER_SERVICE:-}}"
+FLEET="${MUSTER_FLEET_NAME:-}"
+MACHINE="${MUSTER_FLEET_MACHINE:-}"
+HOST="${MUSTER_FLEET_HOST:-}"
+STRATEGY="${MUSTER_FLEET_STRATEGY:-}"
 
-case "${HOOK}:${STATUS}" in
-  post-deploy:success)
-    COLOR="#2eb886"
-    TEXT=":white_check_mark: Deployed *${SERVICE_NAME}* successfully"
+# Emoji + text based on event type
+EMOJI=""
+TEXT=""
+CONTEXT=""
+
+case "$HOOK" in
+  # Fleet hooks
+  fleet-deploy-start)
+    EMOJI=":rocket:"
+    TEXT="Fleet deploy started: *${FLEET}* (${STRATEGY})"
     ;;
-  post-deploy:failed)
-    COLOR="#e01e5a"
-    TEXT=":x: Deploy failed for *${SERVICE_NAME}*"
+  fleet-deploy-end)
+    if [[ "$STATUS" == "ok" ]]; then
+      EMOJI=":white_check_mark:"; TEXT="Fleet deploy complete: *${FLEET}*"
+    else
+      EMOJI=":x:"; TEXT="Fleet deploy FAILED: *${FLEET}*"
+    fi
+    CONTEXT="Strategy: ${STRATEGY}"
     ;;
-  post-deploy:skipped)
-    COLOR="#e8a230"
-    TEXT=":fast_forward: Deploy skipped for *${SERVICE_NAME}*"
+  fleet-machine-deploy-start)
+    EMOJI=":gear:"
+    TEXT="Deploying to *${MACHINE}*"
+    CONTEXT="Host: ${HOST}"
     ;;
-  post-rollback:success)
-    COLOR="#e8a230"
-    TEXT=":rewind: Rolled back *${SERVICE_NAME}* successfully"
+  fleet-machine-deploy-end)
+    if [[ "$STATUS" == "ok" ]]; then
+      EMOJI=":white_check_mark:"; TEXT="Deployed to *${MACHINE}*"
+    else
+      EMOJI=":x:"; TEXT="Deploy FAILED: *${MACHINE}*"
+    fi
+    CONTEXT="Host: ${HOST}"
     ;;
-  post-rollback:failed)
-    COLOR="#e01e5a"
-    TEXT=":x: Rollback failed for *${SERVICE_NAME}*"
+  fleet-rollback-start)
+    EMOJI=":rewind:"
+    TEXT="Fleet rollback started: *${FLEET}*"
+    ;;
+  fleet-rollback-end)
+    if [[ "$STATUS" == "ok" ]]; then
+      EMOJI=":white_check_mark:"; TEXT="Fleet rollback complete: *${FLEET}*"
+    else
+      EMOJI=":x:"; TEXT="Fleet rollback FAILED: *${FLEET}*"
+    fi
+    ;;
+  # Standard hooks
+  post-deploy)
+    case "$STATUS" in
+      success) EMOJI=":white_check_mark:"; TEXT="Deployed *${SERVICE}*" ;;
+      failed)  EMOJI=":x:";               TEXT="Deploy FAILED: *${SERVICE}*" ;;
+      skipped) EMOJI=":fast_forward:";     TEXT="Deploy skipped: *${SERVICE}*" ;;
+      *)       EMOJI=":grey_question:";    TEXT="Deploy ${STATUS}: *${SERVICE}*" ;;
+    esac
+    ;;
+  post-rollback)
+    case "$STATUS" in
+      success) EMOJI=":rewind:";           TEXT="Rolled back *${SERVICE}*" ;;
+      failed)  EMOJI=":x:";               TEXT="Rollback FAILED: *${SERVICE}*" ;;
+      *)       EMOJI=":grey_question:";    TEXT="Rollback ${STATUS}: *${SERVICE}*" ;;
+    esac
     ;;
   *)
-    COLOR="#cccccc"
-    TEXT="Hook \`${HOOK}\` fired for *${SERVICE_NAME}* (status: ${STATUS})"
+    EMOJI=":information_source:"
+    TEXT="${HOOK}: *${SERVICE:-${FLEET:-unknown}}*"
     ;;
 esac
 
-PAYLOAD=$(cat <<EOF
-{
-  "attachments": [
-    {
-      "color": "${COLOR}",
-      "text": "${TEXT}",
-      "fallback": "${TEXT}",
-      "ts": $(date +%s)
-    }
-  ]
-}
-EOF
-)
+# --- Build Block Kit payload ---
 
-if ! curl -sf -X POST -H "Content-Type: application/json" -d "$PAYLOAD" "$MUSTER_SLACK_WEBHOOK" > /dev/null 2>&1; then
-  echo "[slack-skill] WARNING: Failed to send Slack notification (curl error). Continuing."
+_esc() { printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'; }
+
+# Main section block with emoji + text
+BLOCKS="[{\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"$(_esc "${EMOJI} ${TEXT}")\"}}"
+
+# Add context block for fleet info
+if [[ -n "$FLEET" || -n "$CONTEXT" ]]; then
+  CTX_PARTS=""
+  if [[ -n "$FLEET" ]]; then
+    CTX_PARTS="{\"type\":\"mrkdwn\",\"text\":\"Fleet: *$(_esc "$FLEET")*\"}"
+  fi
+  if [[ -n "$CONTEXT" ]]; then
+    [[ -n "$CTX_PARTS" ]] && CTX_PARTS="${CTX_PARTS},"
+    CTX_PARTS="${CTX_PARTS}{\"type\":\"mrkdwn\",\"text\":\"$(_esc "$CONTEXT")\"}"
+  fi
+  BLOCKS="${BLOCKS},{\"type\":\"context\",\"elements\":[${CTX_PARTS}]}"
+fi
+
+BLOCKS="${BLOCKS}]"
+
+# Fallback text for notifications (no markdown)
+FALLBACK="${EMOJI} ${TEXT}"
+FALLBACK="${FALLBACK//\*/}"
+
+PAYLOAD="{\"text\":\"$(_esc "$FALLBACK")\",\"blocks\":${BLOCKS}}"
+
+# --- Send to Slack ---
+
+if ! curl -sf -X POST \
+  -H "Content-Type: application/json" \
+  -d "$PAYLOAD" \
+  "$MUSTER_SLACK_WEBHOOK" > /dev/null 2>&1; then
+  echo "[slack] Failed to send notification (curl error). Continuing."
 fi
 
 exit 0

@@ -1,9 +1,15 @@
 {
   "name": "datadog",
-  "version": "1.0.3",
-  "description": "Send deploy events to Datadog",
-  "author": "ImJustRicky",
-  "hooks": ["post-deploy", "post-rollback"],
+  "version": "2.0.0",
+  "description": "Send deploy and fleet events to Datadog",
+  "author": "muster",
+  "hooks": [
+    "post-deploy",
+    "post-rollback",
+    "fleet-deploy-end",
+    "fleet-machine-deploy-end",
+    "fleet-rollback-end"
+  ],
   "requires": ["curl"],
   "config": [
     {
@@ -15,7 +21,7 @@
     {
       "key": "MUSTER_DATADOG_SITE",
       "label": "Datadog Site",
-      "hint": "e.g. datadoghq.com (US1), us3.datadoghq.com, datadoghq.eu, etc. Default: datadoghq.com"
+      "hint": "e.g. datadoghq.com (US1), us3.datadoghq.com, datadoghq.eu. Default: datadoghq.com"
     }
   ]
 }
